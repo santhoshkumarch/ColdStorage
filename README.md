@@ -1,6 +1,6 @@
 # CloudWatch Logs to S3 Bucket (cold storage)
 
-![Screenshot 2023-11-24 at 2.55.09 PM.png](../assets/poster.png)
+!(../assets/poster.png)
 
 **Pre-Requisities**
 
