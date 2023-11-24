@@ -28,7 +28,7 @@ def set_global_vars():
         global_vars["Environment"]              = "Prod"
         global_vars["aws_region"]               = "us-east-1"
         global_vars["tag_name"]                 = "serverless_cloudwatch_logs_exporter"
-        global_vars["retention_days"]           = 2
+        global_vars["retention_days"]           = 1
         global_vars["cw_logs_to_export"]        = get_all_ecs_log_groups();
         # global_vars["cw_logs_to_export"]        = [group for group in global_vars["cw_logs_to_export"] if group != "/aws/ecs/containerinsights"]
         #global_vars["cw_logs_to_export"]       = os.environ.get("cw_logs_to_export").split(",")
