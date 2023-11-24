@@ -12,6 +12,8 @@ from botocore.client import ClientError
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# Declare loop at a global scope
+loop = None
 
 def set_global_vars():
     global_vars = {"status": False}
@@ -67,16 +69,18 @@ async def export_cw_logs_to_s3(global_vars, log_group_name, retention_days, buck
 
     try:
         client = boto3.client('logs')
-        r = await loop.run_in_executor(None, client.create_export_task,
-                                        gen_uuid(),
-                                        log_group_name,
-                                        f_time,
-                                        t_time,
-                                        bucket_name,
-                                        d_prefix
-                                        )
-        r = await get_tsk_status(r.get('taskId'), global_vars.get('time_out'), global_vars.get('tsk_back_off'))
-        if resp.get('status'):
+        r = client.create_export_task(
+            taskName=gen_uuid(),
+            logGroupName=log_group_name,
+            fromTime=f_time,
+            to=t_time,
+            destination=bucket_name,
+            destinationPrefix=d_prefix
+        )
+
+        # Get the status of each of those asynchronous export tasks
+        r = get_tsk_status(r.get('taskId'), global_vars.get('time_out'), global_vars.get('tsk_back_off'))
+        if r.get('status'):
             resp_data['task_info'] = r.get('tsk_info')
             resp_data['status'] = True
         else:
@@ -186,6 +190,7 @@ def filter_logs_to_export(global_vars, lgs):
 
 
 def lambda_handler(event, context):
+    global loop
     global_vars = set_global_vars()
     resp_data = {"status": False, "error_message": ''}
 
