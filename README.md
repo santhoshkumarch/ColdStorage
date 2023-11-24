@@ -1,6 +1,6 @@
 # CloudWatch Logs to S3 Bucket (cold storage)
 
-!(../assets/poster.png)
+![poster](./assets/poster.png)
 
 **Pre-Requisities**
 
