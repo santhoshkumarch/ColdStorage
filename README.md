@@ -1,6 +1,6 @@
 # CloudWatch Logs to S3 Bucket (cold storage)
 
-![Screenshot 2023-11-24 at 2.55.09 PM.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/77746171-e330-431c-9dd3-f5aa0fe98d8b/9c08f56c-6177-492b-acbf-8bfa14e57535/Screenshot_2023-11-24_at_2.55.09_PM.png)
+![Screenshot 2023-11-24 at 2.55.09 PM.png](../assets/poster.png)
 
 **Pre-Requisities**
 
