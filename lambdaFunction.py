@@ -1,3 +1,4 @@
+# Import necessary libraries and modules
 import boto3
 import os
 import uuid
@@ -15,9 +16,11 @@ logger.setLevel(logging.INFO)
 # Declare loop at a global scope
 loop = None
 
+# Function to set global environment variables
 def set_global_vars():
     global_vars = {"status": False}
     try:
+        # Set various global variables
         global_vars["Owner"] = "Mystique"
         global_vars["Environment"] = "Prod"
         global_vars["aws_region"] = "us-east-1"
@@ -33,18 +36,19 @@ def set_global_vars():
         global_vars["error_message"] = str(e)
     return global_vars
 
-
+# Function to fetch ECS log groups from CloudWatch
 def get_all_ecs_log_groups():
     log_groups = []
     try:
         client = boto3.client('logs')
+        # Describe log groups with a prefix of '/aws/ecs/'
         response = client.describe_log_groups(logGroupNamePrefix='/aws/ecs/')
         log_groups = [group['logGroupName'] for group in response.get('logGroups', [])]
     except Exception as e:
         logger.error(f"Unable to fetch CloudWatch log groups: {str(e)}")
     return log_groups
 
-
+# Async function to export CloudWatch logs to S3 for a given log group
 async def export_cw_logs_to_s3(global_vars, log_group_name, retention_days, bucket_name, obj_prefix=None):
     resp_data = {'status': False, 'task_info': {}, 'error_message': ''}
     if not retention_days:
@@ -69,6 +73,7 @@ async def export_cw_logs_to_s3(global_vars, log_group_name, retention_days, buck
 
     try:
         client = boto3.client('logs')
+        # Create an export task
         r = client.create_export_task(
             taskName=gen_uuid(),
             logGroupName=log_group_name,
@@ -90,12 +95,12 @@ async def export_cw_logs_to_s3(global_vars, log_group_name, retention_days, buck
         logger.error(f"Error exporting logs for log group '{log_group_name}': {resp_data['error_message']}")
     return resp_data
 
-
+# Async function to export logs for all log groups
 async def export_all_logs(global_vars, log_groups):
     export_tasks = [export_cw_logs_to_s3(global_vars, log_group.get('logGroupName'), global_vars.get('retention_days'), global_vars.get('log_dest_bkt')) for log_group in log_groups]
     return await asyncio.gather(*export_tasks)
 
-
+# Function to get the status of an export task
 def get_tsk_status(tsk_id, time_out, tsk_back_off):
     resp_data = {'status': False, 'tsk_info': {}, 'error_message': ''}
     client = boto3.client('logs')
@@ -124,11 +129,11 @@ def get_tsk_status(tsk_id, time_out, tsk_back_off):
     logger.info(f"It took {t} seconds to export Log Group: '{resp_data.get('tsk_info').get('logGroupName')}'")
     return resp_data
 
-
+# Function to generate a UUID
 def gen_uuid():
     return str(uuid.uuid4())
 
-
+# Function to generate year-month-day from epoch time
 def gen_ymd_from_epoch(t):
     t = t / 1000
     ymd = (str(datetime.datetime.utcfromtimestamp(t).year) +
@@ -139,12 +144,12 @@ def gen_ymd_from_epoch(t):
            )
     return ymd
 
-
+# Function to generate year-month-day from a datetime object
 def gen_ymd(t, d):
     ymd = (str(t.year) + d + str(t.month) + d + str(t.day))
     return ymd
 
-
+# Function to check if an S3 bucket exists
 def does_bucket_exists(bucket_name):
     bucket_exists_status = {'status': False, 'error_message': ''}
     try:
@@ -160,7 +165,7 @@ def does_bucket_exists(bucket_name):
             bucket_exists_status['error_message'] = str(e)
     return bucket_exists_status
 
-
+# Function to get CloudWatch log groups
 def get_cloudwatch_log_groups(global_vars):
     resp_data = {'status': False, 'log_groups': [], 'error_message': ''}
     client = boto3.client('logs')
@@ -179,7 +184,7 @@ def get_cloudwatch_log_groups(global_vars):
         logger.error(f"Error getting CloudWatch log groups: {resp_data['error_message']}")
     return resp_data
 
-
+# Function to filter logs based on the predefined criteria
 def filter_logs_to_export(global_vars, lgs):
     resp_data = {'status': False, 'log_groups': [], 'error_message': ''}
     for lg in lgs.get('log_groups'):
@@ -188,7 +193,7 @@ def filter_logs_to_export(global_vars, lgs):
             resp_data['status'] = True
     return resp_data
 
-
+# AWS Lambda handler function
 def lambda_handler(event, context):
     global loop
     global_vars = set_global_vars()
@@ -224,6 +229,6 @@ def lambda_handler(event, context):
 
     return resp_data
 
-
+# Entry point when running the script as the main module
 if __name__ == '__main__':
     lambda_handler(None, None)
