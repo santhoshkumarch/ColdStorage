@@ -28,12 +28,12 @@ def set_global_vars():
         global_vars["Environment"]              = "Prod"
         global_vars["aws_region"]               = "us-east-1"
         global_vars["tag_name"]                 = "serverless_cloudwatch_logs_exporter"
-        global_vars["retention_days"]           = 2
+        global_vars["retention_days"]           = 180
         global_vars["cw_logs_to_export"]        = get_all_ecs_log_groups();
         # global_vars["cw_logs_to_export"]        = [group for group in global_vars["cw_logs_to_export"] if group != "/aws/ecs/containerinsights"]
         #global_vars["cw_logs_to_export"]       = os.environ.get("cw_logs_to_export").split(",")
         global_vars["log_dest_bkt"]             = "cw-logroup-to-s3"
-        global_vars["time_out"]                 = 30000
+        global_vars["time_out"]                 = 300
         global_vars["tsk_back_off"]             = 2
         global_vars["status"]                   = True
     except Exception as e:
@@ -237,7 +237,7 @@ def get_tsk_status(tsk_id, time_out, tsk_back_off):
     """
     resp_data = {'status': False, 'tsk_info':{}, 'error_message': ''}
     client = boto3.client('logs')
-    if not time_out: time_out = 30000
+    if not time_out: time_out = 300
     t = tsk_back_off
     try:
         # Lets get all the logs
