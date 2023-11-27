@@ -1,11 +1,9 @@
 # Import necessary libraries and modules
 import boto3
-import os
 import uuid
 import time
 import datetime
 import asyncio
-import json
 import logging
 from botocore.client import ClientError
 
@@ -24,7 +22,7 @@ def set_global_vars():
         global_vars["Owner"] = "Mystique"
         global_vars["Environment"] = "Prod"
         global_vars["aws_region"] = "us-east-1"
-        global_vars["tag_name"] = "serverless_cloudwatch_logs_exporter"
+        global_vars["tag_name"] = "cloudwatch_logs_s3_bucket"
         global_vars["retention_days"] = 1
         global_vars["cw_logs_to_export"] = get_all_ecs_log_groups()
         global_vars["log_dest_bkt"] = "cw-logroup-to-s3"
@@ -133,16 +131,16 @@ def get_tsk_status(tsk_id, time_out, tsk_back_off):
 def gen_uuid():
     return str(uuid.uuid4())
 
-# Function to generate year-month-day from epoch time
-def gen_ymd_from_epoch(t):
-    t = t / 1000
-    ymd = (str(datetime.datetime.utcfromtimestamp(t).year) +
-           "-" +
-           str(datetime.datetime.utcfromtimestamp(t).month) +
-           "-" +
-           str(datetime.datetime.utcfromtimestamp(t).day)
-           )
-    return ymd
+# # Function to generate year-month-day from epoch time
+# def gen_ymd_from_epoch(t):
+#     t = t / 1000
+#     ymd = (str(datetime.datetime.utcfromtimestamp(t).year) +
+#            "-" +
+#            str(datetime.datetime.utcfromtimestamp(t).month) +
+#            "-" +
+#            str(datetime.datetime.utcfromtimestamp(t).day)
+#            )
+#     return ymd
 
 # Function to generate year-month-day from a datetime object
 def gen_ymd(t, d):
@@ -218,7 +216,7 @@ def lambda_handler(event, context):
         resp_data['lgs'] = {'all_logs': lgs, 'cw_logs_to_export': global_vars.get('cw_logs_to_export'), 'filtered_logs': f_lgs}
         return resp_data
 
-    loop = asyncio.new_event_loop()
+    loop = asyncio.new_event_loop() #The asyncio library is used for asynchronous programming.
     asyncio.set_event_loop(loop)
 
     try:
